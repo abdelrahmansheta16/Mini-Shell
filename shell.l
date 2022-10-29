@@ -16,16 +16,28 @@
 
 %%
 
-[\n"|"] 	{
+[\n] 	{
 		return NEWLINE;
+	}
+
+"|" 	{
+		return NEWCOMMAND;
+	}
+
+"&" 	{
+		return BACK;
 	}
 
 [ \t] 	{
 		/* Discard spaces and tabs */
      	}	
 
-">" 	{
+(">")+ 	{
 		return GREAT;
+	}
+
+("<")+ 	{
+		return LESS;
 	}
 
 [^ \t\n][^ \t\n]*  {

@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE 
+%token 	NOTOKEN GREAT NEWLINE LESS NEWCOMMAND BACK
 
 %union	{
 		char   *string_val;
@@ -46,6 +46,34 @@ command: simple_command
 
 simple_command:	
 	command_and_args iomodifier_opt NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args NEWCOMMAND commands NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	|command_and_args iomodifier_opt background NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args background NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args NEWCOMMAND commands background NEWLINE {
+		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.execute();
+	}
+	| command_and_args iomodifier_opt NEWCOMMAND commands background NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
@@ -87,7 +115,17 @@ iomodifier_opt:
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
 	}
-	| /* can be empty */ 
+	|  LESS WORD {
+		printf("   Yacc: insert input \"%s\"\n", $2);
+		Command::_currentCommand._inputFile = $2;
+	}
+	;
+background:
+	BACK {
+               printf("   Yacc: background = \"YES\"\n");
+	       
+	       Command::_currentCommand._background = 1;
+	}
 	;
 
 %%
