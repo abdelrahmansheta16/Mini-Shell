@@ -1,0 +1,18 @@
+total 320
+drwxr-xr-x 4 abdelrahman abdelrahman  4096 Oct 30 17:23 .
+drwxr-xr-x 4 abdelrahman abdelrahman  4096 Oct 30 17:21 ..
+drwxr-xr-x 8 abdelrahman abdelrahman  4096 Oct 30 17:21 .git
+-rw-r--r-- 1 abdelrahman abdelrahman   338 Oct 30 17:21 Makefile
+-rw-r--r-- 1 abdelrahman abdelrahman  8212 Oct 30 17:23 command.cc
+-rw-r--r-- 1 abdelrahman abdelrahman   761 Oct 30 17:21 command.h
+-rw-r--r-- 1 abdelrahman abdelrahman 28472 Oct 30 17:23 command.o
+drwxr-xr-x 2 abdelrahman abdelrahman  4096 Oct 30 17:21 examples
+-rw-r--r-- 1 abdelrahman abdelrahman 45145 Oct 30 17:21 lex.yy.c
+-rw-r--r-- 1 abdelrahman abdelrahman 43384 Oct 30 17:21 lex.yy.o
+-rw-r--r-- 1 abdelrahman abdelrahman     0 Oct 30 17:23 out
+-rwxr-xr-x 1 abdelrahman abdelrahman 70488 Oct 30 17:23 shell
+-rw-r--r-- 1 abdelrahman abdelrahman   547 Oct 30 17:21 shell.l
+-rw-r--r-- 1 abdelrahman abdelrahman  2736 Oct 30 17:21 shell.y
+-rw-r--r-- 1 abdelrahman abdelrahman 52098 Oct 30 17:21 y.tab.c
+-rw-r--r-- 1 abdelrahman abdelrahman  2537 Oct 30 17:21 y.tab.h
+-rw-r--r-- 1 abdelrahman abdelrahman 26992 Oct 30 17:21 y.tab.o

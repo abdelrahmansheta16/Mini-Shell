@@ -251,8 +251,10 @@ int Command::commandExecute(void)
 		close(defaulterr);
 
 		// Wait for last process in the pipe line
-		waitpid(pid, 0, 0);
-
+		if(_background == 0){
+			waitpid(pid, 0, 0);
+		}
+		
 		// exit( 2 );
 	}
 	else if (_inputFile)
@@ -336,7 +338,9 @@ int Command::commandExecute(void)
 		close(defaulterr);
 
 		// Wait for last process in the pipe line
-		waitpid(pid, 0, 0);
+		if(_background == 0){
+			waitpid(pid, 0, 0);
+		}
 
 		// exit( 2 );
 	}
@@ -378,7 +382,9 @@ int Command::commandExecute(void)
 		}
 		else
 		{
-			wait(NULL);
+			if(_background == 0){
+			waitpid(pid, 0, 0);
+		}
 			printf("Done with execvp\n");
 		}
 	}
