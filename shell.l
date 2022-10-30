@@ -32,11 +32,15 @@
 		/* Discard spaces and tabs */
      	}	
 
-(">")+ 	{
+">" 	{
 		return GREAT;
 	}
 
-("<")+ 	{
+">>" 	{
+		return GREATA;
+	}
+
+"<" 	{
 		return LESS;
 	}
 

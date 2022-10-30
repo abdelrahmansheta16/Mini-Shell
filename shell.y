@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE LESS NEWCOMMAND BACK
+%token 	NOTOKEN GREAT NEWLINE LESS NEWCOMMAND BACK GREATA
 
 %union	{
 		char   *string_val;
@@ -118,6 +118,24 @@ iomodifier_opt:
 	|  LESS WORD {
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
+	}
+	|	GREATA WORD {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._append = 1;
+	}
+	|	GREAT WORD iomodifier_opt {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+	}
+	|  LESS WORD iomodifier_opt {
+		printf("   Yacc: insert input \"%s\"\n", $2);
+		Command::_currentCommand._inputFile = $2;
+	}
+	|	GREATA WORD iomodifier_opt {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._append = 1;
 	}
 	;
 background:
