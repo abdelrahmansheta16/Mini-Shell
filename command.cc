@@ -17,8 +17,19 @@
 #include <string.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <fstream>
+
 
 #include "command.h"
+
+void handler_kill(int sig){}
+void handler_chld(int sig){
+	std::fstream fs;
+	fs.open("log.txt", std::fstream::app);
+	fs << sig;
+	fs << "\n";
+	fs.close();
+}
 
 SimpleCommand::SimpleCommand()
 {
@@ -110,6 +121,7 @@ void Command::clear()
 	_background = 0;
 	_append = 0;
 	_doubleFile = 0;
+	isPipe = 0;
 }
 
 void Command::print()
@@ -250,6 +262,7 @@ int Command::commandExecute(void)
 			{
 				perror("ERROR");
 			}
+			exit(0);
 			// exit( 2 );
 		}
 
@@ -337,6 +350,7 @@ int Command::commandExecute(void)
 			{
 				perror("ERROR");
 			}
+			exit(0);
 			// exit( 2 );
 		}
 
@@ -492,6 +506,7 @@ int Command::commandExecute(void)
 
 				// exec() is not suppose to return, something went wrong
 				perror( "cat_grep: exec cat");
+				exit(0);
 			}
 			// Restore input, output, and error
 
@@ -548,6 +563,7 @@ int Command::commandExecute(void)
 			{
 				perror("ERROR");
 			}
+			exit(0);
 		}
 		else
 		{
@@ -567,6 +583,8 @@ int yyparse(void);
 
 int main()
 {
+	signal(SIGINT, handler_kill);
+	signal(SIGCHLD, handler_chld);
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;

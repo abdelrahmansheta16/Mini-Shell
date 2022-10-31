@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE LESS NEWCOMMAND BACK GREATA
+%token 	NOTOKEN GREAT NEWLINE LESS NEWCOMMAND BACK GREATA EXIT
 
 %union	{
 		char   *string_val;
@@ -58,7 +58,7 @@ simple_command:
 		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
-	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {                                    
+	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
@@ -82,6 +82,7 @@ simple_command:
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
+	| exitcommand NEWLINE
 	| error NEWLINE { yyerrok; }
 	;
 
@@ -128,12 +129,18 @@ iomodifier_opt:
 		Command::_currentCommand._outFile = $2;
 		Command::_currentCommand._append = 1;
 	}
-	|	LESS WORD GREAT WORD {
+	|	GREAT WORD iomodifier_opt {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+	}
+	|  LESS WORD iomodifier_opt {
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
-		Command::_currentCommand._doubleFile = 1;
-		printf("   Yacc: insert output \"%s\"\n", $4);
-		Command::_currentCommand._outFile = $4;
+	}
+	|	GREATA WORD iomodifier_opt {
+		printf("   Yacc: insert output \"%s\"\n", $2);
+		Command::_currentCommand._outFile = $2;
+		Command::_currentCommand._append = 1;
 	}
 	;
 background:
@@ -143,6 +150,11 @@ background:
 	       Command::_currentCommand._background = 1;
 	}
 	;
+exitcommand:
+	EXIT {
+				printf("   Good bye!\n");
+				exit(0);
+	}
 
 %%
 
