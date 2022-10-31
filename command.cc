@@ -121,7 +121,7 @@ void Command::clear()
 	_background = 0;
 	_append = 0;
 	_doubleFile = 0;
-	isPipe = 0;
+	_isPipe = 0;
 }
 
 void Command::print()
@@ -147,7 +147,7 @@ void Command::print()
 	printf("  %-12s %-12s %-12s %-12s\n", _outFile ? _outFile : "default",
 		   _inputFile ? _inputFile : "default", _errFile ? _errFile : "default",
 		   _background ? "YES" : "NO");
-	printf("_isPipe = %d",isPipe);
+	printf("_isPipe = %d",_isPipe);
 	printf("\n\n");
 }
 
@@ -183,7 +183,7 @@ int Command::commandExecute(void)
 {
 	pid_t pid;
 	int j;
-	if (_outFile && !isPipe)
+	if (_outFile && !_isPipe)
 	{
 		// Save default input, output, and error because we will
 		// change them during redirection and we will need to restore them
@@ -373,7 +373,7 @@ int Command::commandExecute(void)
 
 		// exit( 2 );
 	}
-	else if (isPipe == 1)
+	else if (_isPipe == 1)
 	{
 		// Save default input, output, and error because we will
 		// change them during redirection and we will need to restore them

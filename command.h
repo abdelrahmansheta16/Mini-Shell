@@ -25,7 +25,7 @@ struct Command {
 	int _background;
 	int _append;
 	int _doubleFile;
-	int isPipe = 1;
+	int _isPipe = 0;
 
 	void prompt();
 	void print();

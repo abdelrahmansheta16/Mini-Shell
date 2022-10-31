@@ -53,14 +53,12 @@ simple_command:
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
-	| command_and_args NEWCOMMAND commands NEWLINE {
+	| command_and_args newcomm commands NEWLINE {
 		printf("   Yacc: Execute command\n");
-		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
-	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {
+	| command_and_args iomodifier_opt newcomm commands NEWLINE {
 		printf("   Yacc: Execute command\n");
-		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
 	|command_and_args iomodifier_opt background NEWLINE {
@@ -71,14 +69,12 @@ simple_command:
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
-	| command_and_args NEWCOMMAND commands background NEWLINE {
+	| command_and_args newcomm commands background NEWLINE {
 		printf("   Yacc: Execute command\n");
-		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
-	| command_and_args iomodifier_opt NEWCOMMAND commands background NEWLINE {
+	| command_and_args iomodifier_opt newcomm commands background NEWLINE {
 		printf("   Yacc: Execute command\n");
-		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
@@ -150,12 +146,17 @@ background:
 	       Command::_currentCommand._background = 1;
 	}
 	;
+newcomm:
+	NEWCOMMAND {	
+			Command::_currentCommand._isPipe = 1;
+	}
+	;
 exitcommand:
 	EXIT {
 				printf("   Good bye!\n");
 				exit(0);
 	}
-
+	;
 %%
 
 void
