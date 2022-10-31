@@ -23,6 +23,9 @@ struct Command {
 	char * _inputFile;
 	char * _errFile;
 	int _background;
+	int _append;
+	int _doubleFile;
+	int isPipe = 1;
 
 	void prompt();
 	void print();

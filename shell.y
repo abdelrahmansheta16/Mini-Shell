@@ -55,10 +55,12 @@ simple_command:
 	}
 	| command_and_args NEWCOMMAND commands NEWLINE {
 		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
-	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {
+	| command_and_args iomodifier_opt NEWCOMMAND commands NEWLINE {                                    
 		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
 	|command_and_args iomodifier_opt background NEWLINE {
@@ -71,10 +73,12 @@ simple_command:
 	}
 	| command_and_args NEWCOMMAND commands background NEWLINE {
 		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
 	| command_and_args iomodifier_opt NEWCOMMAND commands background NEWLINE {
 		printf("   Yacc: Execute command\n");
+		Command::_currentCommand.isPipe = 1;
 		Command::_currentCommand.execute();
 	}
 	| NEWLINE 
@@ -124,18 +128,12 @@ iomodifier_opt:
 		Command::_currentCommand._outFile = $2;
 		Command::_currentCommand._append = 1;
 	}
-	|	GREAT WORD iomodifier_opt {
-		printf("   Yacc: insert output \"%s\"\n", $2);
-		Command::_currentCommand._outFile = $2;
-	}
-	|  LESS WORD iomodifier_opt {
+	|	LESS WORD GREAT WORD {
 		printf("   Yacc: insert input \"%s\"\n", $2);
 		Command::_currentCommand._inputFile = $2;
-	}
-	|	GREATA WORD iomodifier_opt {
-		printf("   Yacc: insert output \"%s\"\n", $2);
-		Command::_currentCommand._outFile = $2;
-		Command::_currentCommand._append = 1;
+		Command::_currentCommand._doubleFile = 1;
+		printf("   Yacc: insert output \"%s\"\n", $4);
+		Command::_currentCommand._outFile = $4;
 	}
 	;
 background:
