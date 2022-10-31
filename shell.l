@@ -20,6 +20,10 @@
 		return NEWLINE;
 	}
 
+[ \t] 	{
+		/* Discard spaces and tabs */
+     	}
+
 "|" 	{
 		return NEWCOMMAND;
 	}
@@ -27,11 +31,7 @@
 "&" 	{
 		return BACK;
 	}
-
-[ \t] 	{
-		/* Discard spaces and tabs */
-     	}	
-
+	
 ">" 	{
 		return GREAT;
 	}
@@ -44,7 +44,11 @@
 		return LESS;
 	}
 
-[^ \t\n][^ \t\n]*  {
+"exit" 	{
+		return EXIT;
+	}
+
+[^ \t\n|&><][^ \t\n|&><]*  {
 		/* Assume that file names have only alpha chars */
 		yylval.string_val = strdup(yytext);
 		return WORD;
