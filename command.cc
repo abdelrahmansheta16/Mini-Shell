@@ -18,6 +18,8 @@
 #include <signal.h>
 #include <fcntl.h>
 #include <fstream>
+#include <iostream>
+
 
 
 #include "command.h"
@@ -26,6 +28,7 @@ void handler_kill(int sig){}
 void handler_chld(int sig){
 	std::fstream fs;
 	fs.open("log.txt", std::fstream::app);
+	fs << "Child terminated: ";
 	fs << sig;
 	fs << "\n";
 	fs.close();
@@ -183,7 +186,12 @@ int Command::commandExecute(void)
 {
 	pid_t pid;
 	int j;
-	if (_outFile && !_isPipe)
+	std::string fun = _simpleCommands[0]->_arguments[0];
+	if ( fun.compare("cd") == 0)
+	{
+		chdir(_simpleCommands[0]->_arguments[1]);
+	}
+	else if (_outFile && !_isPipe)
 	{
 		// Save default input, output, and error because we will
 		// change them during redirection and we will need to restore them
@@ -285,8 +293,9 @@ int Command::commandExecute(void)
 		
 		// exit( 2 );
 	}
-	else if (_inputFile)
+	else if (_inputFile && !_isPipe )
 	{
+		
 		// Save default input, output, and error because we will
 		// change them during redirection and we will need to restore them
 		// at the end.
@@ -385,147 +394,115 @@ int Command::commandExecute(void)
 		// Create new pipe 
 		// Conceptually, a pipe is a connection between two processes, 
 		// such that the standard output from one process becomes the standard input of the other process.
-		// so if a process writes to fdpipe[1] process be can read from fdpipe[0] 
-		
-		
-		for (int i = _numberOfSimpleCommands - 1; i > -1 ; i--)
+		// so if a process writes to fdpipe[1] process be can read from fdpipe[0]
+		int fdpipe[(_numberOfSimpleCommands-1)*2];
+		for (size_t i = 0; i < _numberOfSimpleCommands-1; i++)
 		{
-			printf("%d",i);
-			int fdpipe[_numberOfSimpleCommands];
-			if ( pipe(fdpipe) == -1) {
-				perror( "cat_grep: pipe");
-				exit( 2 );
+			if ( pipe(fdpipe + i*2) == -1) {
+			perror( "cat_grep: pipe");
+			exit( 2 );
 			}
-
-			if(i == (_numberOfSimpleCommands-1)){
+		}
+		
 					// Redirect input (use sdtin)
-				dup2( defaultin, 0 );
+			dup2( defaultin, 0 );
 				
-				// Redirect output to pipe (write the output to pipefile[1] instead od stdout)
-				dup2( fdpipe[ i ], 1 );
+				// Redirect output to pipe (write the output to pipefile[1] instead of stdout)
+			dup2( fdpipe[1], 1 );
 
 				// Redirect err (use stderr)
-				dup2( defaulterr, 2 );
-			}
-			if(i == (_numberOfSimpleCommands - 2)){
-				if(i == 0){
+			dup2( defaulterr, 2 );
+
 				// Redirect input for grep feed it with the output of cat which is writen by the child in fdpipe[1] 
 				// so parent should read it from fdpipe[0]
-				dup2( fdpipe[i], 0);
-				
-				if(_outFile){
-					int outfd;
-					if(_append == 1){
-						outfd = open(_outFile,O_WRONLY | O_APPEND);
-					}else {
-						outfd = creat(_outFile, 0666);
-					}
-					if (outfd < 0)
+			for (int i = 0; i < _numberOfSimpleCommands; i++){
+
+				char *argv[_simpleCommands[i]->_numberOfArguments + 1];
+				for (j = 0; j < _simpleCommands[i]->_numberOfArguments; j++)
+				{
+					argv[j] = _simpleCommands[i]->_arguments[j];
+				}
+				argv[j] = NULL;
+
+				int pid = fork();
+				if ( pid == -1 ) {
+					perror( "cat_grep: fork\n");
+					exit( 2 );
+				}
+
+				if (pid == 0) {
+					for (size_t i = 0; i < _numberOfSimpleCommands-1; i++)
 					{
-						perror("ls : create outfile");
-						// exit( 2 );
+						close(fdpipe[i*2]);
+						close(fdpipe[i*2+1]);
 					}
-					// Redirect Output to the Default (stdout)
-					dup2( outfd ,1);
-					close(outfd);
-				} else {
-					// Redirect Output to the Default (stdout)
-					dup2( defaultout ,1);
-				}
-				
-				// Redirect err
-				dup2( defaulterr, 2 );
-				} else {
-					// Redirect input for grep feed it with the output of cat which is writen by the child in fdpipe[1] 
-					// so parent should read it from fdpipe[0]
-					dup2( fdpipe[i], 0);
-					
-					// Redirect Output to the Default (stdout)
-					dup2( fdpipe[i] ,1);
-					
-					// Redirect err
-					dup2( defaulterr, 2 );
-				}
-			}
+					close( defaultin );
+					close( defaultout );
+					close( defaulterr );
 
-			if(i == (_numberOfSimpleCommands - 3)){
-				// Redirect input for grep feed it with the output of cat which is writen by the child in fdpipe[1] 
-				// so parent should read it from fdpipe[0]
-				dup2( fdpipe[i], 0);
-				
-				if(_outFile){
-					int outfd;
-					if(_append == 1){
-						outfd = open(_outFile,O_WRONLY | O_APPEND);
-					}else {
-						outfd = creat(_outFile, 0666);
-					}
-					if (outfd < 0)
+					execvp(argv[0], argv);
+					perror( "cat_grep: exec cat");
+					exit( 2 );
+				}
+
+				if (i == 0)
+				{
+					dup2( fdpipe[0] ,0);
+				}
+
+				if (i == _numberOfSimpleCommands - 2)
+				{
+					if (_outFile)
 					{
-						perror("ls : create outfile");
-						// exit( 2 );
+						int outfd;
+						if(_append == 1){
+							outfd = open(_outFile,O_WRONLY | O_APPEND);
+						}else {
+							outfd = creat(_outFile, 0666);
+						}
+						if (outfd < 0)
+						{
+							perror("ls : create outfile");
+							// exit( 2 );
+						}
+						// Redirect output to the created utfile instead off printing to stdout
+						dup2(outfd, 1);
+						close(outfd);
 					}
-					// Redirect Output to the Default (stdout)
-					dup2( outfd ,1);
-					close(outfd);
-				} else {
-					// Redirect Output to the Default (stdout)
-					dup2( defaultout ,1);
+					else
+					{
+						dup2( defaultout, 1 );
+					}
 				}
-				
-				// Redirect err
+
+				if (i != 0)
+				{
+					dup2( fdpipe[i*2] ,0);
+				}
+
+				if (i != _numberOfSimpleCommands - 2)
+				{
+					dup2( fdpipe[(i+1)*2+1], 1 );
+				}
 				dup2( defaulterr, 2 );
-			}
-			
-			char *argv[_simpleCommands[_numberOfSimpleCommands - i - 1]->_numberOfArguments + 1];
-			for (j = 0; j < _simpleCommands[_numberOfSimpleCommands - i - 1]->_numberOfArguments; j++)
-			{
-				argv[j] = _simpleCommands[_numberOfSimpleCommands - i - 1]->_arguments[j];
-			}
-			argv[j] = NULL;
-			// Create new process for "cat"
-			int pid = fork();
-			if ( pid == -1 ) {
-				perror( "cat_grep: fork\n");
-				exit( 2 );
-			}
-
-			if (pid == 0) {
-				//Child
-				
-				// close file descriptors that are not needed
-				for(int s = 0;s < _numberOfSimpleCommands;s++){
-					close(fdpipe[s]);
-				}
-				close( defaultin );
-				close( defaultout );
-				close( defaulterr );
-
-				// You can use execvp() instead if the arguments are stored in an array
-				execvp(argv[0], argv);
-
-				// exec() is not suppose to return, something went wrong
-				perror( "cat_grep: exec cat");
-				exit(0);
 			}
 			// Restore input, output, and error
-
 			dup2( defaultin, 0 );
 			dup2( defaultout, 1 );
 			dup2( defaulterr, 2 );
-
 			// Close file descriptors that are not needed
-			for(int s = 0;s < _numberOfSimpleCommands;s++){
-					close(fdpipe[s]);
-				}
+			for (size_t i = 0; i < _numberOfSimpleCommands-1; i++)
+			{
+				close(fdpipe[i*2]);
+				close(fdpipe[i*2+1]);
+			}
+			
 			close( defaultin );
 			close( defaultout );
 			close( defaulterr );
-
-			// Wait for last process in the pipe line
+			
 			if(_background == 0){
-				waitpid(pid, 0, 0);
-			}
+			waitpid(pid, 0, 0);
 		}
 	}
 	// int outputFile = _outFile?open(_outFile,O_CREAT | O_TRUNC | O_WRONLY):-1;
